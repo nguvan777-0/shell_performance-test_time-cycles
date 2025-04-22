@@ -1,11 +1,8 @@
 #/bin/bash
 
-# this is a comment
-#this is a comment
-
 LOOPS=${1:-12}
 TEXT=${2:-777}
-COMPARE_APPS="echo printf"
+COMPARE_APPS="pass echo printf"
 
 get_time_cycles() {
   command=${1:-echo}
@@ -29,23 +26,38 @@ get_time_cycles() {
 
 add_up_cycles() {
   cycles_text=${1:-""}
-  #d echo $cycles_text
 
-  math="$(
+  add_math="$(
   echo $cycles_text | \
     xargs -n1 -I{} echo -n {}+ \
     && echo 0
   )"
-  echo $((math))
+
+  echo $((add_math))
+  return $?
 }
 
-echo;echo;echo
-test_intro="we will start a performance test comparing
-these commands
+echoecho() {
+  echos=${1:-2}
 
-[$COMPARE_APPS]"
+  for _ in $(seq $echos)
+  do
+    echo
+  done
+}
+
+test_intro="##############################
+we will start a performance test
+comparing these stdout builtins
+
+$COMPARE_APPS
+
+with these options
+$LOOPS loops
+\"$TEXT\" text to be printed
+##############################"
 echo "$test_intro"
-echo;echo;echo
+echoecho 1
 
 echo COMMAND LOOPS SUM_CYCLES
 for command in $COMPARE_APPS
