@@ -28,12 +28,15 @@ get_time_cycles() {
 
 add_up_cycles() {
   cycles_text=${1:-""}
+  #d echo $cycles_text
 
-  echo ${myarray[@]} | xargs  -n1 -I{} echo -n {}+ ;echo 0
-
-
-
+  math="(($(
+  echo $cycles_text | \
+    xargs -n1 -I{} echo -n {}+ \
+    && echo 0
+  )))"
+  echo $((math))
 }
 
-get_time_cycles printf
-
+printf_cycles=$(get_time_cycles printf)
+add_up_cycles "$printf_cycles"
