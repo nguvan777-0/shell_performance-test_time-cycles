@@ -3,8 +3,9 @@
 # this is a comment
 #this is a comment
 
-LOOPS=${1:-100}
+LOOPS=${1:-12}
 TEXT=${2:-777}
+COMPARE_APPS="echo printf"
 
 get_time_cycles() {
   command=${1:-echo}
@@ -30,13 +31,27 @@ add_up_cycles() {
   cycles_text=${1:-""}
   #d echo $cycles_text
 
-  math="(($(
+  math="$(
   echo $cycles_text | \
     xargs -n1 -I{} echo -n {}+ \
     && echo 0
-  )))"
+  )"
   echo $((math))
 }
 
-printf_cycles=$(get_time_cycles printf)
-add_up_cycles "$printf_cycles"
+echo;echo;echo
+test_intro="we will start a performance test comparing
+these commands
+
+[$COMPARE_APPS]"
+echo "$test_intro"
+echo;echo;echo
+
+echo COMMAND LOOPS SUM_CYCLES
+for command in $COMPARE_APPS
+do
+  _cycles=$(get_time_cycles $command)
+  echo -n "$command $LOOPS "
+  add_up_cycles "$_cycles"
+done
+
