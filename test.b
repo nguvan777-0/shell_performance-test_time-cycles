@@ -1,40 +1,39 @@
-#/bin/bash
+#!/bin/bash
 
 LOOPS=${1:-12}
 TEXT=${2:-777}
 shift 2
-COMPARE_APPS=${*:-pass echo printf}
+COMMANDS_TO_TEST=${*:-pass echo printf true false}
 
-get_time_cycles() {
+run_perf() {
   command=${1:-pass}
   loops=$LOOPS
   text=$TEXT
 
-  cycles_text_table=$(
+  for _ in $(seq $loops)
+  do
+    timeit=$(\time -al $command "$text" 2>&1)
+    echo -n $?,
+    echo "$timeit" | grep -m1 cycles | awk '{print $1}'
+  done
 
-    for _ in $(seq $loops)
-    do
-      \time -al $command "$text" 2>&1 \
-        | grep cycles \
-        | awk '{print $1}'
-    done
-
-  )
-
-  echo $cycles_text_table
   return $?
 }
 
-add_up_cycles() {
-  cycles_text=${1:-""}
+sum_perf_results() {
+  perf_results=${1:-1,0}
+  exit_code_mathexpn=0
+  cycles_mathexpn=0
 
-  add_math="$(
-  echo $cycles_text | \
-    xargs -n1 -I{} echo -n {}+ \
-    && echo 0
-  )"
+  for result in $perf_results
+  do
+    exit_code_mathexpn=$exit_code_mathexpn+${result/,*/}
+    cycles_mathexpn=$cycles_mathexpn+${result/*,/}
+  done
 
-  echo $((add_math))
+  echo -n $((exit_code_mathexpn))" "
+  echo $((cycles_mathexpn))
+
   return $?
 }
 
@@ -48,25 +47,26 @@ echoecho() {
 }
 
 test_intro="##############################
-we will start a performance test
-comparing these stdout builtins
+We will start a performance test for these
+commands in order
 
-$COMPARE_APPS
+$COMMANDS_TO_TEST
 
-with these options
-$LOOPS loops
-\"$TEXT\" text to be printed
+For each command
+time its printing of \"$TEXT\"
+for $LOOPS loops
+then report sum of exit codes and sum of cycles
 ##############################"
 echo "$test_intro"
 echoecho 1
 
 main() {
-  echo COMMAND LOOPS SUM_CYCLES
-  for command in $COMPARE_APPS
+  echo COMMAND LOOPS SUM_EXIT_CODES SUM_CYCLES
+  for command in $COMMANDS_TO_TEST
   do
-    _cycles=$(get_time_cycles $command)
+    _cycles=$(run_perf $command)
     echo -n "$command $LOOPS "
-    add_up_cycles "$_cycles"
+    sum_perf_results "$_cycles"
   done
 }
 main
