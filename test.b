@@ -1,10 +1,11 @@
 #/bin/bash
 
-
 get_time_cycles() {
-  for i in {1..10}
+  loops=${1:-10}
+
+  for _ in $(seq $loops)
   do
-    \time -l echo "i see you" 2>&1 | grep cycles
+    \time -al echo "i see you" 2>&1 | grep cycles
   done
 }
 
