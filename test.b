@@ -2,10 +2,11 @@
 
 LOOPS=${1:-12}
 TEXT=${2:-777}
-COMPARE_APPS="pass echo printf"
+shift 2
+COMPARE_APPS=${*:-pass echo printf}
 
 get_time_cycles() {
-  command=${1:-echo}
+  command=${1:-pass}
   loops=$LOOPS
   text=$TEXT
 
@@ -59,11 +60,13 @@ $LOOPS loops
 echo "$test_intro"
 echoecho 1
 
-echo COMMAND LOOPS SUM_CYCLES
-for command in $COMPARE_APPS
-do
-  _cycles=$(get_time_cycles $command)
-  echo -n "$command $LOOPS "
-  add_up_cycles "$_cycles"
-done
-
+main() {
+  echo COMMAND LOOPS SUM_CYCLES
+  for command in $COMPARE_APPS
+  do
+    _cycles=$(get_time_cycles $command)
+    echo -n "$command $LOOPS "
+    add_up_cycles "$_cycles"
+  done
+}
+main
